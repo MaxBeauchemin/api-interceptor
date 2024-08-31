@@ -1,6 +1,6 @@
 using System.Net;
-using ApiInterceptor.DTOs;
-using ApiInterceptor.Filters;
+using Maxbeauchemin.Api.Interceptor.DTOs;
+using Maxbeauchemin.Api.Interceptor.Filters;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
