@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ApiInterceptor\Maxbeauchemin.Api.Interceptor.csproj" />
+      <ProjectReference Include="..\Maxbeauchemin.Api.Interceptor\Maxbeauchemin.Api.Interceptor.csproj" />
     </ItemGroup>
 
 </Project>
