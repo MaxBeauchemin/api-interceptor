@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiInterceptor", "ApiInterceptor\ApiInterceptor.csproj", "{5817C4EA-F8D4-4C9D-88EA-7D13E8DE779A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiInterceptor.Tests", "ApiInterceptor.Tests\ApiInterceptor.Tests.csproj", "{35C6E475-A86D-4189-AF0E-B4E7B1D5860F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5817C4EA-F8D4-4C9D-88EA-7D13E8DE779A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5817C4EA-F8D4-4C9D-88EA-7D13E8DE779A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5817C4EA-F8D4-4C9D-88EA-7D13E8DE779A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5817C4EA-F8D4-4C9D-88EA-7D13E8DE779A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35C6E475-A86D-4189-AF0E-B4E7B1D5860F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35C6E475-A86D-4189-AF0E-B4E7B1D5860F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35C6E475-A86D-4189-AF0E-B4E7B1D5860F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35C6E475-A86D-4189-AF0E-B4E7B1D5860F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
