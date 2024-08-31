@@ -1,4 +1,4 @@
-namespace ApiInterceptor.DTOs;
+namespace Maxbeauchemin.Api.Interceptor.DTOs;
 
 public class Options
 {

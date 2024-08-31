@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiInterceptor", "ApiInterceptor\ApiInterceptor.csproj", "{5817C4EA-F8D4-4C9D-88EA-7D13E8DE779A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maxbeauchemin.Api.Interceptor", "Maxbeauchemin.Api.Interceptor\Maxbeauchemin.Api.Interceptor.csproj", "{5817C4EA-F8D4-4C9D-88EA-7D13E8DE779A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiInterceptor.Tests", "ApiInterceptor.Tests\ApiInterceptor.Tests.csproj", "{35C6E475-A86D-4189-AF0E-B4E7B1D5860F}"
 EndProject

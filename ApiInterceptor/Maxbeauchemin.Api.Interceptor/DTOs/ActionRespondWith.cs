@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace ApiInterceptor.DTOs;
+namespace Maxbeauchemin.Api.Interceptor.DTOs;
 
 public class ActionRespondWith
 {

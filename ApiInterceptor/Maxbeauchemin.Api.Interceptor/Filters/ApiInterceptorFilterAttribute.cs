@@ -1,11 +1,11 @@
 using System.Net.Mime;
 using System.Text.Json;
-using ApiInterceptor.DTOs;
+using Maxbeauchemin.Api.Interceptor.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 
-namespace ApiInterceptor.Filters;
+namespace Maxbeauchemin.Api.Interceptor.Filters;
 
 public class ApiInterceptorFilterAttribute : ActionFilterAttribute
 {

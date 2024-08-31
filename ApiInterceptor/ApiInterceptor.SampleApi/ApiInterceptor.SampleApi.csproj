@@ -7,8 +7,12 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
+<!--    <ItemGroup>-->
+<!--      <ProjectReference Include="..\ApiInterceptor\ApiInterceptor.csproj" />-->
+<!--    </ItemGroup>-->
+
     <ItemGroup>
-      <ProjectReference Include="..\ApiInterceptor\ApiInterceptor.csproj" />
+      <PackageReference Include="Maxbeauchemin.Api.Interceptor" Version="1.0.0" />
     </ItemGroup>
 
 </Project>
