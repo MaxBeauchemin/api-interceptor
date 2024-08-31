@@ -2,6 +2,9 @@
 /ApiInterceptor/ApiInterceptor/.bin/
 /ApiInterceptor/ApiInterceptor.Tests/.bin/
 /ApiInterceptor/ApiInterceptor.Tests/bin/
+/ApiInterceptor/ApiInterceptor.SampleApi/.bin/
+/ApiInterceptor/ApiInterceptor.SampleApi/bin/
 /ApiInterceptor/ApiInterceptor/obj/
 /ApiInterceptor/ApiInterceptor.Tests/obj/
+/ApiInterceptor/ApiInterceptor.SampleApi/obj/
 /ApiInterceptor/ApiInterceptor.sln.DotSettings.user
