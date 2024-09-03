@@ -1,6 +1,8 @@
 using System.Net.Mime;
 using System.Text.Json;
 using Maxbeauchemin.Api.Interceptor.DTOs;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
@@ -58,8 +60,11 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         var methodType = context.HttpContext.Request.Method;
         var url = context.HttpContext.Request.Path.Value;
         var queryString = context.HttpContext.Request.QueryString.Value;
+
+        var queryParams = context.HttpContext.Request.Query
+            .ToDictionary(q => q.Key.ToLower().Trim(), q => q.Value.Select(v => v.Trim()).ToList());
         
-        var scenarioMatch = enabledScenarios.Find(scenario => MatchesScenario(scenario.Filter, identity, methodType, url));
+        var scenarioMatch = enabledScenarios.Find(scenario => MatchesScenario(scenario.Filter, identity, methodType, url, queryParams));
 
         if (scenarioMatch == null) return;
 
@@ -84,11 +89,11 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         }
     }
 
-    private bool MatchesScenario(ScenarioFilter filter, string? identity, string methodType, string url)
+    private bool MatchesScenario(ScenarioFilter filter, string? identity, string methodType, string url, Dictionary<string, List<string>> queryParams)
     {
         var matchesEmails = MatchesIdentity(filter, identity);
 
-        var matchesEndpoint = MatchesEndpoint(filter, methodType, url);
+        var matchesEndpoint = MatchesEndpoint(filter, methodType, url, queryParams);
 
         var matchesPercentage = MatchesPercentage(filter);
         
@@ -107,7 +112,7 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         return true;
     }
 
-    private static bool MatchesEndpoint(ScenarioFilter filter, string methodType, string url)
+    private static bool MatchesEndpoint(ScenarioFilter filter, string methodType, string url, Dictionary<string, List<string>> queryParams)
     {
         if (filter.Endpoints != null && filter.Endpoints.Any())
         {
@@ -119,10 +124,30 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
                 var matchingUrl = e.URL.Trim() == "*" ||
                                   url.ToLower().Contains(e.URL.Trim().ToLower());
 
-                if (matchingMethodType && matchingUrl) return true;
+                var matchingParameters = MatchesParameters(e, queryParams);
+
+                if (matchingMethodType && matchingUrl && matchingParameters) return true;
             }
 
             return false;
+        }
+
+        return true;
+    }
+
+    private static bool MatchesParameters(FilterEndpoint endpoint, Dictionary<string, List<string>> queryParams)
+    {
+        if (endpoint.Parameters == null || endpoint.Parameters.Count == 0) return true;
+
+        foreach (var p in endpoint.Parameters)
+        {
+            var key = p.Key.ToLower().Trim();
+
+            if (!queryParams.TryGetValue(key, out var paramValues)) return false;
+
+            var matched = p.Values.Intersect(paramValues).Any();
+
+            if (!matched) return false;
         }
 
         return true;

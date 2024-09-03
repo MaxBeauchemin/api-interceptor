@@ -50,9 +50,12 @@ This section describes the different parameters that can be provided in the Opti
   - `DisableWarningLog (bool opt.)` - whether Warning logs should be disabled. Default is all interceptions record warning logs.
   - `Filter (object req.)` - the criteria that will be used to identify if a particular request should be intercepted by this scenario
     - `Identities (string array opt.)` - if provided, only identities (obtained from the identity provider) that are in the list will be intercepted
-    - `Endpoints (object array opt.)` - if provided, only APIs that match one of the items in this collection will be intercepted
+    - `Endpoints (array opt.)` - if provided, only APIs that match one of the items in this collection will be intercepted
       - `MethodType (string req.)` - type of method to match, can be wild-carded with `*`
       - `URL (string req.)` - URL to match, can be partial, or can be wild-carded with `*`
+      - `Parameters (array opt.)` - query parameters to match, each key can have multiple values to attempt to match to, but the request must contain a match in each key
+        - `Key (string req.)` - the parameter name that must be provided
+        - `Values (string array req.)` - the list of values that can be matched for this parameter
     - `Percentage (int opt.)` - if provided, a random integer between `1` and `100` will be chosen, and the request will only be intercepted if the number is lower than this parameter's value
   - `Actions (object req.)` - the action(s) that will be performed if this scenario intercepts a request
     - `DelayMs (int opt.)` - if provided, a delay of the provided Milliseconds will be added before proceeding like normal
