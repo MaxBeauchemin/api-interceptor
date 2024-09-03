@@ -1,6 +1,6 @@
 using System.Net;
-using ApiInterceptor.DTOs;
-using ApiInterceptor.Filters;
+using Maxbeauchemin.Api.Interceptor.DTOs;
+using Maxbeauchemin.Api.Interceptor.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;

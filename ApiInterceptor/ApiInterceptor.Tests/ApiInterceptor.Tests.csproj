@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ApiInterceptor\ApiInterceptor.csproj" />
+      <ProjectReference Include="..\Maxbeauchemin.Api.Interceptor\Maxbeauchemin.Api.Interceptor.csproj" />
     </ItemGroup>
 
 </Project>

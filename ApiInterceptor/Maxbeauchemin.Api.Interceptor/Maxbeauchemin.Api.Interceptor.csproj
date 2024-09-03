@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PackageId>Maxbeauchemin.Api.Interceptor</PackageId>
+        <Version>1.1.0</Version>
+        <Authors>Maxime Beauchemin</Authors>
+        <Product>API Interceptor</Product>
+        <Description>Package to add to a project to allow you to create API interceptor rules on deployed code to simulate outages or mock responses</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/MaxBeauchemin/api-interceptor</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>icon.png</PackageIcon>
+    </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="/" />
+        <None Include="../../icon.png" Pack="true" PackagePath="/" />
+    </ItemGroup>
+</Project>

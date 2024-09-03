@@ -1,7 +1,11 @@
 /ApiInterceptor/.idea/
-/ApiInterceptor/ApiInterceptor/.bin/
+/ApiInterceptor/Maxbeauchemin.Api.Interceptor/bin/
+/ApiInterceptor/Maxbeauchemin.Api.Interceptor/.bin/
 /ApiInterceptor/ApiInterceptor.Tests/.bin/
 /ApiInterceptor/ApiInterceptor.Tests/bin/
-/ApiInterceptor/ApiInterceptor/obj/
+/ApiInterceptor/ApiInterceptor.SampleApi/.bin/
+/ApiInterceptor/ApiInterceptor.SampleApi/bin/
+/ApiInterceptor/Maxbeauchemin.Api.Interceptor/obj/
 /ApiInterceptor/ApiInterceptor.Tests/obj/
+/ApiInterceptor/ApiInterceptor.SampleApi/obj/
 /ApiInterceptor/ApiInterceptor.sln.DotSettings.user
