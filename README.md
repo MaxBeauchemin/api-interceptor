@@ -39,6 +39,8 @@ var identityProvider = (ActionExecutingContext ctx) =>
 };
 ```
 
+If the Options Provider / Identity Provider / Logger aren't able to be set at program startup, you can swap them out later using their respective `Set` functions, as long as you maintain a reference to the Filter class you initialized.
+
 ## Options
 
 This section describes the different parameters that can be provided in the Options objects to control the Api Interceptor functionality
