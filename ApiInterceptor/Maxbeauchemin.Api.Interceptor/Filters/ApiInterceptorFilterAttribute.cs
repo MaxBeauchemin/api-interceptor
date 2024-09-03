@@ -11,9 +11,9 @@ namespace Maxbeauchemin.Api.Interceptor.Filters;
 
 public class ApiInterceptorFilterAttribute : ActionFilterAttribute
 {
-    private readonly Func<Options> _optionsProvider;
-    private readonly Func<ActionExecutingContext, string?>? _identityProvider;
-    private readonly ILogger? _logger;
+    private Func<Options> _optionsProvider;
+    private Func<ActionExecutingContext, string?>? _identityProvider;
+    private ILogger? _logger;
     private readonly Random _random;
     
     private const string CustomResponseHeader = "X-Api-Interceptor-Scenario";
@@ -32,6 +32,33 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         _identityProvider = identityProvider;
         _logger = logger;
         _random = new Random();
+    }
+
+    /// <summary>
+    /// Updates the Options Provider in use
+    /// </summary>
+    /// <param name="optionsProvider"></param>
+    public void SetOptionsProvider(Func<Options> optionsProvider)
+    {
+        _optionsProvider = optionsProvider;
+    }
+
+    /// <summary>
+    /// Updates the Identity Provider in use
+    /// </summary>
+    /// <param name="identityProvider"></param>
+    public void SetIdentityProvider(Func<ActionExecutingContext, string?> identityProvider)
+    {
+        _identityProvider = identityProvider;
+    }
+
+    /// <summary>
+    /// Updates the Logger in use
+    /// </summary>
+    /// <param name="logger"></param>
+    public void SetLogger(ILogger logger)
+    {
+        _logger = logger;
     }
 
     public override void OnActionExecuting(ActionExecutingContext context)

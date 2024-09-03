@@ -4,7 +4,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PackageId>Maxbeauchemin.Api.Interceptor</PackageId>
-        <Version>1.1.0</Version>
+        <Version>1.2.0</Version>
         <Authors>Maxime Beauchemin</Authors>
         <Product>API Interceptor</Product>
         <Description>Package to add to a project to allow you to create API interceptor rules on deployed code to simulate outages or mock responses</Description>
