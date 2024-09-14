@@ -25,6 +25,11 @@ var apiInterceptorOptions = new Options
                     {
                         MethodType = "GET",
                         URL = "*"
+                    },
+                    new ()
+                    {
+                        MethodType = "POST",
+                        URL = "BAD_URL"
                     }
                 }
             },

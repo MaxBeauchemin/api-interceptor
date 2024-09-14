@@ -87,11 +87,12 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         var methodType = context.HttpContext.Request.Method;
         var url = context.HttpContext.Request.Path.Value;
         var queryString = context.HttpContext.Request.QueryString.Value;
+        var body = GetBody(context.HttpContext.Request);
 
         var queryParams = context.HttpContext.Request.Query
             .ToDictionary(q => q.Key.ToLower().Trim(), q => q.Value.Select(v => v.Trim()).ToList());
         
-        var scenarioMatch = enabledScenarios.Find(scenario => MatchesScenario(scenario.Filter, identity, methodType, url, queryParams));
+        var scenarioMatch = enabledScenarios.Find(scenario => MatchesScenario(scenario.Filter, identity, methodType, url, queryParams, body));
 
         if (scenarioMatch == null) return;
 
@@ -116,11 +117,11 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         }
     }
 
-    private bool MatchesScenario(ScenarioFilter filter, string? identity, string methodType, string url, Dictionary<string, List<string>> queryParams)
+    private bool MatchesScenario(ScenarioFilter filter, string? identity, string methodType, string url, Dictionary<string, List<string>> queryParams, string? body)
     {
         var matchesEmails = MatchesIdentity(filter, identity);
 
-        var matchesEndpoint = MatchesEndpoint(filter, methodType, url, queryParams);
+        var matchesEndpoint = MatchesEndpoint(filter, methodType, url, queryParams, body);
 
         var matchesPercentage = MatchesPercentage(filter);
         
@@ -139,7 +140,7 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         return true;
     }
 
-    private static bool MatchesEndpoint(ScenarioFilter filter, string methodType, string url, Dictionary<string, List<string>> queryParams)
+    private static bool MatchesEndpoint(ScenarioFilter filter, string methodType, string url, Dictionary<string, List<string>> queryParams, string? body)
     {
         if (filter.Endpoints != null && filter.Endpoints.Any())
         {
@@ -153,7 +154,9 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
 
                 var matchingParameters = MatchesParameters(e, queryParams);
 
-                if (matchingMethodType && matchingUrl && matchingParameters) return true;
+                var matchingBody = MatchesBody(e, body);
+
+                if (matchingMethodType && matchingUrl && matchingParameters && matchingBody) return true;
             }
 
             return false;
@@ -175,6 +178,72 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
             var matched = p.Values.Intersect(paramValues).Any();
 
             if (!matched) return false;
+        }
+
+        return true;
+    }
+
+    private static bool MatchesBody(FilterEndpoint endpoint, string? body)
+    {
+        if (endpoint.BodyProperties == null || endpoint.BodyProperties.Count == 0) return true;
+
+        if (body == null) return false;
+        
+        var bodyObj = JsonSerializer.Deserialize<object>(body);
+        
+        foreach (var p in endpoint.BodyProperties)
+        {
+            // var key = p.Key.ToLower().Trim();
+            //
+            // if (key == "$.Property")
+            // {
+            //     //Root Property
+            // }
+            //
+            // if (key == "$.Object.Property")
+            // {
+            //     //Property nested within the Object object
+            // }
+            //
+            // //This pattern continues for deeply nested properties
+            //
+            // if (key == "$[*]")
+            // {
+            //     //Value in any position of root array that is not an object
+            // }
+            //
+            // if (key == "$[0]")
+            // {
+            //     //Value in the first position of root array that is not an object
+            // }
+            //
+            // if (key == "$[*].Property")
+            // {
+            //     //Property of object in any position of root array
+            // }
+            //
+            // if (key == "$[0].Property")
+            // {
+            //     //Property of object in the first position of root array
+            // }
+            //
+            // if (key == "$.Array[*]")
+            // {
+            //     
+            // }
+            //
+            // if (key == "$.Array[*][0]")
+            // {
+            //     
+            // }
+            
+            
+
+            // if (!queryParams.TryGetValue(key, out var paramValues)) return false;
+            //
+            // var matched = p.Values.Intersect(paramValues).Any();
+            //
+            // if (!matched) return false;
         }
 
         return true;
@@ -203,5 +272,18 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         };
         
         context.Result = result;
+    }
+
+    private static string? GetBody(HttpRequest request)
+    {
+        if (request.Body == null) return null;
+        if (request.Body.Length == 0) return null;
+        
+        request.EnableBuffering();
+        request.Body.Position = 0;
+        var streamReader = new StreamReader(request.Body);
+        var body = streamReader.ReadToEnd();
+        request.Body.Position = 0;
+        return body;
     }
 }

@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http;
-
 namespace Maxbeauchemin.Api.Interceptor.DTOs;
 
 public class FilterEndpoint
@@ -18,4 +16,11 @@ public class FilterEndpoint
     /// query parameters to match, each key can have multiple values to attempt to match to, but the request must contain a match in each key
     /// </summary>
     public List<EndpointParameters>? Parameters { get; set; }
+    
+    /// <summary>
+    /// request body properties to match, each key can have multiple values to attempt to match to, but the request must contain a match in each key
+    ///
+    /// Note: currently only supports JSON request body
+    /// </summary>
+    public List<EndpointBodyProperty>? BodyProperties { get; set; }
 }
