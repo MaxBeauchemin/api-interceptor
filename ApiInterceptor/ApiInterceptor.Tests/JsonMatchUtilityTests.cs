@@ -5,7 +5,7 @@ namespace ApiInterceptor.Tests;
 public class JsonMatchUtilityTests
 {
     [Fact]
-    public void BasicPropertyTest()
+    public void Tokenize_BasicPropertyTest()
     {
         var path = "$.X";
 
@@ -18,7 +18,7 @@ public class JsonMatchUtilityTests
     }
     
     [Fact]
-    public void NestedPropertyTest()
+    public void Tokenize_NestedPropertyTest()
     {
         var path = "$.X.Y.Z";
 
@@ -52,7 +52,7 @@ public class JsonMatchUtilityTests
     }
     
     [Fact]
-    public void NestedArrayTest()
+    public void Tokenize_NestedArrayTest()
     {
         var path = "$[0][1][*]";
 
@@ -73,7 +73,7 @@ public class JsonMatchUtilityTests
     }
     
     [Fact]
-    public void ComplexMixMatchedTest()
+    public void Tokenize_ComplexMixMatchedTest()
     {
         var path = "$.X.Y[0][12].Items[*]";
 
@@ -103,5 +103,39 @@ public class JsonMatchUtilityTests
         var arrayTokenWild = Assert.IsType<JsonMatchUtility.ArrayToken>(childTokenWild);
         Assert.Null(arrayTokenWild.Position);
         Assert.Null(childTokenWild.ChildToken);
+    }
+
+    [Fact]
+    public void GetObjectValues_BasicPropertyTest()
+    {
+        var obj = new
+        {
+            X = "test"
+        };
+
+        var token = JsonMatchUtility.TokenizePath("$.X");
+
+        var values = JsonMatchUtility.GetObjectTokenValues(obj, token);
+
+        Assert.NotNull(values);
+        Assert.Single(values);
+        Assert.Equal("test", values[0]);
+    }
+    
+    [Fact]
+    public void GetObjectValues_BasicArrayTest()
+    {
+        var arr = new List<string>
+        {
+            "test"
+        };
+
+        var token = JsonMatchUtility.TokenizePath("$[0]");
+
+        var values = JsonMatchUtility.GetObjectTokenValues(arr, token);
+
+        Assert.NotNull(values);
+        Assert.Single(values);
+        Assert.Equal("test", values[0]);
     }
 }

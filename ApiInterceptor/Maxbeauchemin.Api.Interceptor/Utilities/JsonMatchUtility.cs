@@ -1,10 +1,87 @@
+using Newtonsoft.Json.Linq;
+
 namespace Maxbeauchemin.Api.Interceptor.Utilities;
 
 public static class JsonMatchUtility
 {
-    public static bool MatchesJson(string path, List<string> values)
+    public static bool MatchesJson(object obj, string path, List<string?> values)
     {
+        try
+        {
+            var token = TokenizePath(path);
+
+            var objValues = GetObjectTokenValues(obj, token);
+
+            if (objValues == null) return false;
+
+            if (objValues.Contains(null) && values.Contains(null)) return true;
+            
+            var nonNullObjValuesToString = objValues.Where(v => v != null).Select(v => v.ToString()).ToList();
+            var nonNullValues = values.Where(v => v != null).ToList();
+
+            foreach (var objValue in nonNullObjValuesToString)
+            {
+                if (nonNullValues.Exists(v => v.Equals(objValue, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        catch
+        {
+        }
+        
         return false;
+    }
+
+    public static List<object?>? GetObjectTokenValues(object? obj, PathToken token, bool recurseIntoChildTokens = true)
+    {
+        if (obj == null) return null;
+
+        var objValues = new List<object?>();
+        
+        if (token is PropertyToken propertyToken)
+        {
+            var propInfo = obj.GetType().GetProperty(propertyToken.PropertyName);
+            
+            if (propInfo == null) return null;
+
+            objValues.Add(propInfo.GetValue(obj));
+        }
+        else if (token is ArrayToken arrayToken)
+        {
+            var listObj = obj as List<object?>;
+            
+            if (listObj == null) return null;
+
+            if (arrayToken.Position == null)
+            {
+                objValues.AddRange(listObj);
+            }
+            else if (listObj.Count <= arrayToken.Position)
+            {
+                return null;
+            }
+            else
+            {
+                objValues.Add(listObj[arrayToken.Position.Value]);
+            }
+        }
+        else
+        {
+            return null;
+        }
+
+        if (recurseIntoChildTokens && token.ChildToken != null)
+        {
+            return objValues.SelectMany(o => GetObjectTokenValues(o, token.ChildToken, true)).ToList();
+        }
+        else
+        {
+            return objValues;
+        }
     }
     
     /// <summary>
