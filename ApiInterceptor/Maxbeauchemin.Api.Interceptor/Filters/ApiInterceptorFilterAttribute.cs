@@ -1,8 +1,9 @@
 using System.Net.Mime;
+using System.Text;
 using System.Text.Json;
 using Maxbeauchemin.Api.Interceptor.DTOs;
+using Maxbeauchemin.Api.Interceptor.Utilities;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
@@ -61,19 +62,21 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         _logger = logger;
     }
 
-    public override void OnActionExecuting(ActionExecutingContext context)
+    public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         try
         {
-            CheckScenarios(context);
+            await CheckScenarios(context);
         }
         catch (Exception ex)
         {
             _logger?.LogError($"Error occured while processing API Interceptor code... Details: {ex.Message}. StackTrace: {ex.StackTrace}");
         }
+
+        if (context.Result == null) await next();
     }
 
-    private void CheckScenarios(ActionExecutingContext context)
+    private async Task CheckScenarios(ActionExecutingContext context)
     {
         var options = _optionsProvider();
 
@@ -87,11 +90,14 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         var methodType = context.HttpContext.Request.Method;
         var url = context.HttpContext.Request.Path.Value;
         var queryString = context.HttpContext.Request.QueryString.Value;
+        var queryParams = context.HttpContext.Request.Query?
+            .ToDictionary(q => q.Key.ToLower().Trim(), q => q.Value.Select(v => v.Trim()).ToList()) ?? new ();
 
-        var queryParams = context.HttpContext.Request.Query
-            .ToDictionary(q => q.Key.ToLower().Trim(), q => q.Value.Select(v => v.Trim()).ToList());
-        
-        var scenarioMatch = enabledScenarios.Find(scenario => MatchesScenario(scenario.Filter, identity, methodType, url, queryParams));
+        var anyScenariosUseBody = enabledScenarios.Any(s => s.Filter.Endpoints?.Any(e => e.BodyProperties != null && e.BodyProperties.Any()) ?? false);
+
+        var body = anyScenariosUseBody ? await GetBody(context.HttpContext.Request, _logger) : null;
+
+        var scenarioMatch = enabledScenarios.Find(scenario => MatchesScenario(scenario.Filter, identity, methodType, url, queryParams, body));
 
         if (scenarioMatch == null) return;
 
@@ -116,11 +122,11 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         }
     }
 
-    private bool MatchesScenario(ScenarioFilter filter, string? identity, string methodType, string url, Dictionary<string, List<string>> queryParams)
+    private bool MatchesScenario(ScenarioFilter filter, string? identity, string methodType, string url, Dictionary<string, List<string>> queryParams, string? body)
     {
         var matchesEmails = MatchesIdentity(filter, identity);
 
-        var matchesEndpoint = MatchesEndpoint(filter, methodType, url, queryParams);
+        var matchesEndpoint = MatchesEndpoint(filter, methodType, url, queryParams, body);
 
         var matchesPercentage = MatchesPercentage(filter);
         
@@ -139,7 +145,7 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         return true;
     }
 
-    private static bool MatchesEndpoint(ScenarioFilter filter, string methodType, string url, Dictionary<string, List<string>> queryParams)
+    private static bool MatchesEndpoint(ScenarioFilter filter, string methodType, string url, Dictionary<string, List<string>> queryParams, string? body)
     {
         if (filter.Endpoints != null && filter.Endpoints.Any())
         {
@@ -153,7 +159,9 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
 
                 var matchingParameters = MatchesParameters(e, queryParams);
 
-                if (matchingMethodType && matchingUrl && matchingParameters) return true;
+                var matchingBody = MatchesBody(e, body);
+
+                if (matchingMethodType && matchingUrl && matchingParameters && matchingBody) return true;
             }
 
             return false;
@@ -175,6 +183,24 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
             var matched = p.Values.Intersect(paramValues).Any();
 
             if (!matched) return false;
+        }
+
+        return true;
+    }
+
+    private static bool MatchesBody(FilterEndpoint endpoint, string? body)
+    {
+        if (endpoint.BodyProperties == null || endpoint.BodyProperties.Count == 0) return true;
+
+        if (body == null) return false;
+        
+        var jsonElement = JsonSerializer.SerializeToElement(JsonSerializer.Deserialize<object>(body));
+        
+        foreach (var p in endpoint.BodyProperties)
+        {
+            var matches = JsonMatchUtility.MatchesJson(jsonElement, p.Path, p.Values);
+
+            if (!matches) return false;
         }
 
         return true;
@@ -203,5 +229,25 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         };
         
         context.Result = result;
+    }
+
+    private static async Task<string?> GetBody(HttpRequest request, ILogger? logger)
+    {
+        if (!request.Body.CanSeek)
+        {
+            if (logger != null) logger.LogWarning("Request Buffering has not been enabled - cannot read Request Body");
+            return null;
+        }
+
+        if (request.Body == null) return null;
+
+        request.Body.Position = 0;
+
+        var reader = new StreamReader(request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+        request.Body.Position = 0;
+
+        return body;
     }
 }

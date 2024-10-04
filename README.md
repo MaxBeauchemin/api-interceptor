@@ -22,7 +22,19 @@ builder.Services.AddMvc(opts =>
 });
 ```
 
-For this to work, you will need to create either an `Options` object, or a function that can be used to retrieve them when necessary.
+If you plan on filtering any endpoints by their `Body`, you will need to enable Request Buffering
+
+The following code should be added in your `Program.cs` before your `UseEndpoints` / `MapControllers`
+```csharp
+app.Use(next => context =>
+{
+    context.Request.EnableBuffering();
+    return next(context);
+});
+```
+Failing to do this step will result in the ActionFilter always reading the Request Body as an empty string
+
+For the API Interception to work, you will need to create either an `Options` object, or a function that can be used to retrieve them when necessary.
 
 The `Options` object configures the functionality of the interceptor and the different scenarios that it should be setup to handle. If you wish to be able to switch the options without having to restart your application, you will need to construct the class using an Options Provider function that can be used to retrieve the current setup.
 
@@ -58,9 +70,33 @@ This section describes the different parameters that can be provided in the Opti
       - `Parameters (array opt.)` - query parameters to match, each key can have multiple values to attempt to match to, but the request must contain a match in each key
         - `Key (string req.)` - the parameter name that must be provided
         - `Values (string array req.)` - the list of values that can be matched for this parameter
+      - `BodyProperties (array opt.)` - query parameters to match, each key can have multiple values to attempt to match to, but the request must contain a match in each key
+        - `Path (string req.)` - the JSON path to attempt to match, additional details in the Json Path section below
+        - `Values (string array req.)` - the list of values that can be matched for this property
     - `Percentage (int opt.)` - if provided, a random integer between `1` and `100` will be chosen, and the request will only be intercepted if the number is lower than this parameter's value
   - `Actions (object req.)` - the action(s) that will be performed if this scenario intercepts a request
     - `DelayMs (int opt.)` - if provided, a delay of the provided Milliseconds will be added before proceeding like normal
     - `RespondWith (object opt.)` - if provided, the normal underlying code will be skipped and this is the response that will be returned instead.
       - `HttpCode (int req.)` - the HTTP Status Code identifier to respond with
       - `Body (object opt.)` - if provided, this is the body that will be in the response. Defaults to `{}`
+
+## Json Path
+
+For `Body` filtering, we allow you to specify one or more Json Paths that must match a provided value. The path follows the correct pattern:
+
+`$`: Root of Json Body<br>
+`.{Prop}`: Specific Propery of Object<br>
+`[{Idx}]`: Specific Index of an Array<br>
+`[*]`: Any Index of an Array<br>
+
+You can combine these to represent complex paths. *i.e.*
+
+`$.X`: X property at root of object<br>
+`$.X.Y`: Y property inside the X object<br>
+`$[0]`: value in the first position of the root array<br>
+`$[*]`: value at any position of the root array<br>
+`$[1].Z`: Z property of object at 2nd position of the root array<br>
+`$[*].Z`: Z property of object at any position of the root array<br>
+`$.X[2]`: value in the third position of the X array<br>
+`$[*][3]`: value in the fourth position of any positions of the root array<br>
+`$[*][*]`: value in any position of any positions of the root array<br>
