@@ -1,72 +1,82 @@
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Maxbeauchemin.Api.Interceptor.Utilities;
 
 public static class JsonMatchUtility
 {
-    public static bool MatchesJson(object obj, string path, List<string?> values)
+    public static bool MatchesJson(JsonElement element, string path, List<string?> values)
     {
         try
         {
+            if (values == null || values.Count == 0) return false;
+
             var token = TokenizePath(path);
 
-            var objValues = GetObjectTokenValues(obj, token);
+            var objValues = GetElementTokenValues(element, token);
 
-            if (objValues == null) return false;
+            if (objValues == null || objValues.Count == 0) return false;
 
-            if (objValues.Contains(null) && values.Contains(null)) return true;
-            
-            var nonNullObjValuesToString = objValues.Where(v => v != null).Select(v => v.ToString()).ToList();
-            var nonNullValues = values.Where(v => v != null).ToList();
+            var nonNullValues = values.Where(v => v != null).Select(v => v.Trim().ToLower()).ToHashSet();
+            var valuesIncludedNull = values.Count != nonNullValues.Count;
 
-            foreach (var objValue in nonNullObjValuesToString)
+            foreach (var e in objValues)
             {
-                if (nonNullValues.Exists(v => v.Equals(objValue, StringComparison.InvariantCultureIgnoreCase)))
+                switch (e.ValueKind)
                 {
-                    return true;
+                    case JsonValueKind.Null:
+                        {
+                            if (valuesIncludedNull) return true;
+                            break;
+                        }
+                    case JsonValueKind.String:
+                        {
+                            if (nonNullValues.Contains(e.GetString().Trim().ToLower())) return true;
+                            break;
+                        }
+                    case JsonValueKind.Number:
+                        {
+                            if (nonNullValues.Contains(e.GetRawText().Trim().ToLower())) return true;
+                            break;
+                        }
                 }
             }
-
-            return false;
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine(ex);
         }
         
         return false;
     }
 
-    public static List<object?>? GetObjectTokenValues(object? obj, PathToken token, bool recurseIntoChildTokens = true)
+    public static List<JsonElement>? GetElementTokenValues(JsonElement element, PathToken token, bool recurseIntoChildTokens = true)
     {
-        if (obj == null) return null;
-
-        var objValues = new List<object?>();
+        var elementValues = new List<JsonElement>();
         
         if (token is PropertyToken propertyToken)
         {
-            var propInfo = obj.GetType().GetProperty(propertyToken.PropertyName);
-            
-            if (propInfo == null) return null;
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                var elementProperty = element.GetProperty(propertyToken.PropertyName);
 
-            objValues.Add(propInfo.GetValue(obj));
+                elementValues.Add(elementProperty);
+            }
         }
         else if (token is ArrayToken arrayToken)
         {
-            var listObj = obj as List<object?>;
-            
-            if (listObj == null) return null;
+            if (element.ValueKind == JsonValueKind.Array)
+            {
+                var idx = 0;
 
-            if (arrayToken.Position == null)
-            {
-                objValues.AddRange(listObj);
-            }
-            else if (listObj.Count <= arrayToken.Position)
-            {
-                return null;
-            }
-            else
-            {
-                objValues.Add(listObj[arrayToken.Position.Value]);
+                foreach (var arrayElement in element.EnumerateArray())
+                {
+                    if (arrayToken.Position == null || arrayToken.Position == idx)
+                    {
+                        elementValues.Add(arrayElement);
+                    }
+
+                    idx++;
+                }
             }
         }
         else
@@ -76,11 +86,11 @@ public static class JsonMatchUtility
 
         if (recurseIntoChildTokens && token.ChildToken != null)
         {
-            return objValues.SelectMany(o => GetObjectTokenValues(o, token.ChildToken, true)).ToList();
+            return elementValues.SelectMany(o => GetElementTokenValues(o, token.ChildToken, true) ?? []).ToList();
         }
         else
         {
-            return objValues;
+            return elementValues;
         }
     }
     

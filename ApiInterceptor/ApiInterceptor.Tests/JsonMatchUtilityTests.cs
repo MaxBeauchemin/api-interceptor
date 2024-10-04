@@ -1,9 +1,30 @@
 using Maxbeauchemin.Api.Interceptor.Utilities;
+using System.Text.Json;
 
 namespace ApiInterceptor.Tests;
 
 public class JsonMatchUtilityTests
 {
+    //[Fact]
+    //public void Normalize()
+    //{
+    //    var obj = JsonMatchUtility.NormalizeObject(new List<string> { "A", "B" });
+
+    //    var j = (JsonElement)obj;
+
+    //    if (j.ValueKind == JsonValueKind.Array)
+    //    {
+    //        foreach (var i in j.EnumerateArray())
+    //        {
+    //            var ji = (JsonElement)i;
+    //        }
+    //    }
+
+        
+    //}
+
+
+
     [Fact]
     public void Tokenize_BasicPropertyTest()
     {
@@ -105,37 +126,209 @@ public class JsonMatchUtilityTests
         Assert.Null(childTokenWild.ChildToken);
     }
 
+    //[Fact]
+    //public void MatchesJson_ValidTest()
+    //{
+    //    var path = "$.X";
+
+
+
+
+
+    //}
+
     [Fact]
-    public void GetObjectValues_BasicPropertyTest()
+    public void GetElementTokenValues_BasicPropertyTest()
     {
         var obj = new
         {
             X = "test"
         };
 
+        var element = JsonSerializer.SerializeToElement(obj);
+
         var token = JsonMatchUtility.TokenizePath("$.X");
 
-        var values = JsonMatchUtility.GetObjectTokenValues(obj, token);
+        var values = JsonMatchUtility.GetElementTokenValues(element, token);
 
         Assert.NotNull(values);
         Assert.Single(values);
-        Assert.Equal("test", values[0]);
+        Assert.Equal(JsonValueKind.String, values.First().ValueKind);
+        Assert.Equal("test", values.First().GetString());
     }
-    
+
     [Fact]
-    public void GetObjectValues_BasicArrayTest()
+    public void GetElementTokenValues_BasicArrayTest()
     {
         var arr = new List<string>
         {
+            "this",
+            "is",
+            "a",
             "test"
         };
 
-        var token = JsonMatchUtility.TokenizePath("$[0]");
+        var element = JsonSerializer.SerializeToElement(arr);
 
-        var values = JsonMatchUtility.GetObjectTokenValues(arr, token);
+        var token = JsonMatchUtility.TokenizePath("$[3]");
+
+        var values = JsonMatchUtility.GetElementTokenValues(element, token);
 
         Assert.NotNull(values);
         Assert.Single(values);
-        Assert.Equal("test", values[0]);
+        Assert.Equal(JsonValueKind.String, values.First().ValueKind);
+        Assert.Equal("test", values.First().GetString());
+    }
+
+    [Fact]
+    public void GetElementTokenValues_WildcardArrayTest()
+    {
+        var arr = new List<string>
+        {
+            "test1",
+            "test2",
+            "test3"
+        };
+
+        var element = JsonSerializer.SerializeToElement(arr);
+
+        var token = JsonMatchUtility.TokenizePath("$[*]");
+
+        var values = JsonMatchUtility.GetElementTokenValues(element, token);
+
+        Assert.NotNull(values);
+        Assert.Equal(3, values.Count);
+        Assert.Equal(JsonValueKind.String, values[0].ValueKind);
+        Assert.Equal("test1", values[0].GetString());
+        Assert.Equal(JsonValueKind.String, values[1].ValueKind);
+        Assert.Equal("test2", values[1].GetString());
+        Assert.Equal(JsonValueKind.String, values[2].ValueKind);
+        Assert.Equal("test3", values[2].GetString());
+    }
+
+    [Fact]
+    public void GetElementTokenValues_NestedPropertyTest()
+    {
+        var obj = new
+        {
+            X = new
+            {
+                Y = "test"
+            }
+        };
+
+        var element = JsonSerializer.SerializeToElement(obj);
+
+        var token = JsonMatchUtility.TokenizePath("$.X.Y");
+
+        var values = JsonMatchUtility.GetElementTokenValues(element, token);
+
+        Assert.NotNull(values);
+        Assert.Single(values);
+        Assert.Equal(JsonValueKind.String, values.First().ValueKind);
+        Assert.Equal("test", values.First().GetString());
+    }
+
+    [Fact]
+    public void GetElementTokenValues_NestedArrayTest()
+    {
+        var arr = new List<List<string>>
+        {
+            new List<string>
+            {
+                "test"
+            }
+        };
+
+        var element = JsonSerializer.SerializeToElement(arr);
+
+        var token = JsonMatchUtility.TokenizePath("$[0][0]");
+
+        var values = JsonMatchUtility.GetElementTokenValues(element, token);
+
+        Assert.NotNull(values);
+        Assert.Single(values);
+        Assert.Equal(JsonValueKind.String, values.First().ValueKind);
+        Assert.Equal("test", values.First().GetString());
+    }
+
+    [Fact]
+    public void GetElementTokenValues_NestedWildcardArrayTest()
+    {
+        var arr = new List<List<string>>
+        {
+            new List<string>
+            {
+                "test1",
+                "test2",
+                "test3"
+            },
+            new List<string>
+            {
+                "testA",
+                "testB",
+                "testC"
+            }
+        };
+
+        var element = JsonSerializer.SerializeToElement(arr);
+
+        var token = JsonMatchUtility.TokenizePath("$[*][*]");
+
+        var values = JsonMatchUtility.GetElementTokenValues(element, token);
+
+        Assert.NotNull(values);
+        Assert.Equal(6, values.Count);
+        Assert.Equal(JsonValueKind.String, values[0].ValueKind);
+        Assert.Equal("test1", values[0].GetString());
+        Assert.Equal(JsonValueKind.String, values[1].ValueKind);
+        Assert.Equal("test2", values[1].GetString());
+        Assert.Equal(JsonValueKind.String, values[2].ValueKind);
+        Assert.Equal("test3", values[2].GetString());
+        Assert.Equal(JsonValueKind.String, values[3].ValueKind);
+        Assert.Equal("testA", values[3].GetString());
+        Assert.Equal(JsonValueKind.String, values[4].ValueKind);
+        Assert.Equal("testB", values[4].GetString());
+        Assert.Equal(JsonValueKind.String, values[5].ValueKind);
+        Assert.Equal("testC", values[5].GetString());
+    }
+
+    [Fact]
+    public void GetElementTokenValues_ComplexMixedTest()
+    {
+        var obj = new
+        {
+            X = new
+            {
+                Y = new List<object>
+                {
+                    new
+                    {
+                        Z = "string"
+                    },
+                    new
+                    {
+                        A = 12
+                    },
+                    new List<object>
+                    {
+                        new
+                        {
+                            B = false
+                        }
+                    }
+                }
+            }
+        };
+
+        var element = JsonSerializer.SerializeToElement(obj);
+
+        var token = JsonMatchUtility.TokenizePath("$.X.Y[*][*].B");
+
+        var values = JsonMatchUtility.GetElementTokenValues(element, token);
+
+        Assert.NotNull(values);
+        Assert.Single(values);
+        Assert.Equal(JsonValueKind.False, values.First().ValueKind);
     }
 }

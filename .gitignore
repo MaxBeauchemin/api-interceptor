@@ -9,3 +9,5 @@
 /ApiInterceptor/ApiInterceptor.Tests/obj/
 /ApiInterceptor/ApiInterceptor.SampleApi/obj/
 /ApiInterceptor/ApiInterceptor.sln.DotSettings.user
+/.vs
+/ApiInterceptor/.vs
