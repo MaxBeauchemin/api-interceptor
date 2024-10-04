@@ -1,8 +1,8 @@
 using System.Net.Mime;
 using System.Text.Json;
 using Maxbeauchemin.Api.Interceptor.DTOs;
+using Maxbeauchemin.Api.Interceptor.Utilities;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
@@ -89,7 +89,7 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         var queryString = context.HttpContext.Request.QueryString.Value;
         var body = GetBody(context.HttpContext.Request);
 
-        var queryParams = context.HttpContext.Request.Query
+        var queryParams = context.HttpContext.Request.Query?
             .ToDictionary(q => q.Key.ToLower().Trim(), q => q.Value.Select(v => v.Trim()).ToList());
         
         var scenarioMatch = enabledScenarios.Find(scenario => MatchesScenario(scenario.Filter, identity, methodType, url, queryParams, body));
@@ -189,61 +189,13 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
 
         if (body == null) return false;
         
-        var bodyObj = JsonSerializer.Deserialize<object>(body);
+        var jsonElement = JsonSerializer.SerializeToElement(JsonSerializer.Deserialize<object>(body));
         
         foreach (var p in endpoint.BodyProperties)
         {
-            // var key = p.Key.ToLower().Trim();
-            //
-            // if (key == "$.Property")
-            // {
-            //     //Root Property
-            // }
-            //
-            // if (key == "$.Object.Property")
-            // {
-            //     //Property nested within the Object object
-            // }
-            //
-            // //This pattern continues for deeply nested properties
-            //
-            // if (key == "$[*]")
-            // {
-            //     //Value in any position of root array that is not an object
-            // }
-            //
-            // if (key == "$[0]")
-            // {
-            //     //Value in the first position of root array that is not an object
-            // }
-            //
-            // if (key == "$[*].Property")
-            // {
-            //     //Property of object in any position of root array
-            // }
-            //
-            // if (key == "$[0].Property")
-            // {
-            //     //Property of object in the first position of root array
-            // }
-            //
-            // if (key == "$.Array[*]")
-            // {
-            //     
-            // }
-            //
-            // if (key == "$.Array[*][0]")
-            // {
-            //     
-            // }
-            
-            
+            var matches = JsonMatchUtility.MatchesJson(jsonElement, p.Path, p.Values);
 
-            // if (!queryParams.TryGetValue(key, out var paramValues)) return false;
-            //
-            // var matched = p.Values.Intersect(paramValues).Any();
-            //
-            // if (!matched) return false;
+            if (!matches) return false;
         }
 
         return true;

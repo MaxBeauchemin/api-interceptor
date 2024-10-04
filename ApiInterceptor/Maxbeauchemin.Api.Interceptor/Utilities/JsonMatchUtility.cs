@@ -38,6 +38,16 @@ public static class JsonMatchUtility
                             if (nonNullValues.Contains(e.GetRawText().Trim().ToLower())) return true;
                             break;
                         }
+                    case JsonValueKind.False:
+                        {
+                            if (nonNullValues.Contains("false")) return true;
+                            break;
+                        }
+                    case JsonValueKind.True:
+                        {
+                            if (nonNullValues.Contains("true")) return true;
+                            break;
+                        }
                 }
             }
         }
