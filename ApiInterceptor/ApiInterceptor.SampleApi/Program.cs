@@ -29,7 +29,15 @@ var apiInterceptorOptions = new Options
                     new ()
                     {
                         MethodType = "POST",
-                        URL = "BAD_URL"
+                        URL = "*",
+                        BodyProperties = new List<EndpointBodyProperty>
+                        {
+                            new ()
+                            {
+                                Path = "$.X.Y",
+                                Values = [ "Sample" ]
+                            }
+                        }
                     }
                 }
             },
@@ -72,6 +80,6 @@ app.MapControllers();
 app.Run();
 
 //To test this code, you can run the app and call the following command from your terminal window
-//curl http://localhost:5153/api/v1/Sample/Test
+//curl http://localhost:5153/api/v1/Sample/Test?input=sample
 //then you can call this to see it getting intercepted
-//curl http://localhost:5153/api/v1/Sample/Test --header "X-Identity: TestIdentity"
+//curl http://localhost:5153/api/v1/Sample/Test?input=sample --header "X-Identity: TestIdentity"

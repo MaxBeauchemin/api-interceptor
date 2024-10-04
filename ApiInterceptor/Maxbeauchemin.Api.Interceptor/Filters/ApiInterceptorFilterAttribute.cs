@@ -87,7 +87,7 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         var methodType = context.HttpContext.Request.Method;
         var url = context.HttpContext.Request.Path.Value;
         var queryString = context.HttpContext.Request.QueryString.Value;
-        var body = GetBody(context.HttpContext.Request);
+        var body = GetBody(context.HttpContext.Request).Result;
 
         var queryParams = context.HttpContext.Request.Query?
             .ToDictionary(q => q.Key.ToLower().Trim(), q => q.Value.Select(v => v.Trim()).ToList());
@@ -226,16 +226,23 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         context.Result = result;
     }
 
-    private static string? GetBody(HttpRequest request)
+    private static async Task<string?> GetBody(HttpRequest request)
     {
-        if (request.Body == null) return null;
-        if (request.Body.Length == 0) return null;
-        
-        request.EnableBuffering();
-        request.Body.Position = 0;
-        var streamReader = new StreamReader(request.Body);
-        var body = streamReader.ReadToEnd();
-        request.Body.Position = 0;
-        return body;
+        try
+        {
+            if (request.Body == null) return null;
+
+            request.EnableBuffering();
+            request.Body.Position = 0;
+            var streamReader = new StreamReader(request.Body);
+            var body = await streamReader.ReadToEndAsync();
+            request.Body.Position = 0;
+            return body;
+        }
+        catch
+        {
+        }
+
+        return null;
     }
 }
