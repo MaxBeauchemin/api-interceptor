@@ -233,13 +233,13 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
 
     private static async Task<string?> GetBody(HttpRequest request, ILogger? logger)
     {
+        if (request.Body == null) return null;
+        
         if (!request.Body.CanSeek)
         {
             if (logger != null) logger.LogWarning("Request Buffering has not been enabled - cannot read Request Body");
             return null;
         }
-
-        if (request.Body == null) return null;
 
         request.Body.Position = 0;
 
