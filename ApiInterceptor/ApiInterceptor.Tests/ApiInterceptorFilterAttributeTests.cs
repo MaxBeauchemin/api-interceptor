@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Moq;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace ApiInterceptor.Tests;
 
@@ -45,14 +44,21 @@ public class ApiInterceptorFilterAttributeTests
         
         return new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object>(), new { });
     }
-    
+
+    private static ActionExecutionDelegate GetMockActionExecutionDelegate()
+    {
+        var mock = new Mock<ActionExecutionDelegate>();
+
+        return mock.Object;
+    }
+
     private ApiInterceptorFilterAttribute BuildFilter(Options options)
     {
         return new ApiInterceptorFilterAttribute(options, _ => "testIdentity");
     }
     
     [Fact]
-    public void DisabledTest()
+    public async Task DisabledTest()
     {
         //Arrange
         var options = new Options
@@ -67,7 +73,7 @@ public class ApiInterceptorFilterAttributeTests
         
         //Act
         
-        filter.OnActionExecuting(context);
+        await filter.OnActionExecutionAsync(context, GetMockActionExecutionDelegate());
         
         //Assert
         
@@ -75,7 +81,7 @@ public class ApiInterceptorFilterAttributeTests
     }
     
     [Fact]
-    public void IdentityOnlyFilter()
+    public async Task IdentityOnlyFilter()
     {
         //Arrange
         var options = new Options
@@ -105,7 +111,7 @@ public class ApiInterceptorFilterAttributeTests
         
         //Act
         
-        filter.OnActionExecuting(context);
+        await filter.OnActionExecutionAsync(context, GetMockActionExecutionDelegate());
         
         //Assert
         
@@ -118,7 +124,7 @@ public class ApiInterceptorFilterAttributeTests
     }
     
     [Fact]
-    public void UrlOnlyFilter()
+    public async Task UrlOnlyFilter()
     {
         //Arrange
         var options = new Options
@@ -155,7 +161,7 @@ public class ApiInterceptorFilterAttributeTests
         
         //Act
         
-        filter.OnActionExecuting(context);
+        await filter.OnActionExecutionAsync(context, GetMockActionExecutionDelegate());
         
         //Assert
         
@@ -170,7 +176,7 @@ public class ApiInterceptorFilterAttributeTests
     [Theory]
     [InlineData("input", true)]
     [InlineData("test", false)]
-    public void QueryParamsFilter(string key, bool shouldIntercept)
+    public async Task QueryParamsFilter(string key, bool shouldIntercept)
     {
         //Arrange
         var options = new Options
@@ -220,7 +226,7 @@ public class ApiInterceptorFilterAttributeTests
 
         //Act
 
-        filter.OnActionExecuting(context);
+        await filter.OnActionExecutionAsync(context, GetMockActionExecutionDelegate());
 
         //Assert
 
@@ -234,7 +240,7 @@ public class ApiInterceptorFilterAttributeTests
     [Theory]
     [InlineData("$.X", true)]
     [InlineData("$.Y", false)]
-    public void BodyFilter(string path, bool shouldIntercept)
+    public async Task BodyFilter(string path, bool shouldIntercept)
     {
         //Arrange
         var options = new Options
@@ -279,7 +285,7 @@ public class ApiInterceptorFilterAttributeTests
 
         //Act
 
-        filter.OnActionExecuting(context);
+        await filter.OnActionExecutionAsync(context, GetMockActionExecutionDelegate());
 
         //Assert
 
@@ -291,7 +297,7 @@ public class ApiInterceptorFilterAttributeTests
     }
 
     [Fact]
-    public void RespondsWith()
+    public async Task RespondsWith()
     {
         //Arrange
         var options = new Options
@@ -335,7 +341,7 @@ public class ApiInterceptorFilterAttributeTests
         
         //Act
         
-        filter.OnActionExecuting(context);
+        await filter.OnActionExecutionAsync(context, GetMockActionExecutionDelegate());
         
         //Assert
         

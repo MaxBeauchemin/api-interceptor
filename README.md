@@ -22,7 +22,19 @@ builder.Services.AddMvc(opts =>
 });
 ```
 
-For this to work, you will need to create either an `Options` object, or a function that can be used to retrieve them when necessary.
+If you plan on filtering any endpoints by their `Body`, you will need to enable Request Buffering
+
+The following code should be added in your `Program.cs` before your `UseEndpoints` / `MapControllers`
+```csharp
+app.Use(next => context =>
+{
+    context.Request.EnableBuffering();
+    return next(context);
+});
+```
+Failing to do this step will result in the ActionFilter always reading the Request Body as an empty string
+
+For the API Interception to work, you will need to create either an `Options` object, or a function that can be used to retrieve them when necessary.
 
 The `Options` object configures the functionality of the interceptor and the different scenarios that it should be setup to handle. If you wish to be able to switch the options without having to restart your application, you will need to construct the class using an Options Provider function that can be used to retrieve the current setup.
 

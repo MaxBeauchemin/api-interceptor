@@ -47,7 +47,7 @@ var apiInterceptorOptions = new Options
                 {
                     HttpCode = HttpStatusCode.Gone,
                     Body = new {
-                        TestBody = true
+                        InterceptedBody = true
                     }
                 }
             }
@@ -62,7 +62,10 @@ var identityProvider = (ActionExecutingContext ctx) =>
     return identityHeader.Value.ToString();
 };
 
-var filter = new ApiInterceptorFilterAttribute(apiInterceptorOptions, identityProvider);
+using ILoggerFactory logFactory = LoggerFactory.Create(builder => builder.AddConsole());
+ILogger logger = logFactory.CreateLogger("API Interceptor");
+
+var filter = new ApiInterceptorFilterAttribute(apiInterceptorOptions, identityProvider, logger);
 
 filter.Order = int.MinValue;
     
@@ -75,11 +78,19 @@ builder.Services.AddMvc(opts =>
 
 var app = builder.Build();
 
+app.Use(next => context =>
+{
+    context.Request.EnableBuffering();
+    return next(context);
+});
+
 app.MapControllers();
 
 app.Run();
 
 //To test this code, you can run the app and call the following command from your terminal window
-//curl http://localhost:5153/api/v1/Sample/Test?input=sample
+//  curl http://localhost:5153/api/v1/Sample/Test?input=sample
 //then you can call this to see it getting intercepted
-//curl http://localhost:5153/api/v1/Sample/Test?input=sample --header "X-Identity: TestIdentity"
+//  curl http://localhost:5153/api/v1/Sample/Test?input=sample --header "X-Identity: TestIdentity"
+//or this one
+//  curl http://localhost:5153/api/v1/Sample/Test --header "X-Identity: TestIdentity" --data "{ \"X\": { \"Y\": \"Sample\" } }"

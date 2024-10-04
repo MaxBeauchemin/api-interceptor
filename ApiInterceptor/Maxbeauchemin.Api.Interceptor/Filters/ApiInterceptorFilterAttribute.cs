@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using System.Text;
 using System.Text.Json;
 using Maxbeauchemin.Api.Interceptor.DTOs;
 using Maxbeauchemin.Api.Interceptor.Utilities;
@@ -61,19 +62,21 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         _logger = logger;
     }
 
-    public override void OnActionExecuting(ActionExecutingContext context)
+    public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         try
         {
-            CheckScenarios(context);
+            await CheckScenarios(context);
         }
         catch (Exception ex)
         {
             _logger?.LogError($"Error occured while processing API Interceptor code... Details: {ex.Message}. StackTrace: {ex.StackTrace}");
         }
+
+        if (context.Result == null) await next();
     }
 
-    private void CheckScenarios(ActionExecutingContext context)
+    private async Task CheckScenarios(ActionExecutingContext context)
     {
         var options = _optionsProvider();
 
@@ -87,11 +90,13 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         var methodType = context.HttpContext.Request.Method;
         var url = context.HttpContext.Request.Path.Value;
         var queryString = context.HttpContext.Request.QueryString.Value;
-        var body = GetBody(context.HttpContext.Request).Result;
-
         var queryParams = context.HttpContext.Request.Query?
-            .ToDictionary(q => q.Key.ToLower().Trim(), q => q.Value.Select(v => v.Trim()).ToList());
-        
+            .ToDictionary(q => q.Key.ToLower().Trim(), q => q.Value.Select(v => v.Trim()).ToList()) ?? new ();
+
+        var anyScenariosUseBody = enabledScenarios.Any(s => s.Filter.Endpoints?.Any(e => e.BodyProperties != null && e.BodyProperties.Any()) ?? false);
+
+        var body = anyScenariosUseBody ? await GetBody(context.HttpContext.Request, _logger) : null;
+
         var scenarioMatch = enabledScenarios.Find(scenario => MatchesScenario(scenario.Filter, identity, methodType, url, queryParams, body));
 
         if (scenarioMatch == null) return;
@@ -226,23 +231,23 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         context.Result = result;
     }
 
-    private static async Task<string?> GetBody(HttpRequest request)
+    private static async Task<string?> GetBody(HttpRequest request, ILogger? logger)
     {
-        try
+        if (!request.Body.CanSeek)
         {
-            if (request.Body == null) return null;
-
-            request.EnableBuffering();
-            request.Body.Position = 0;
-            var streamReader = new StreamReader(request.Body);
-            var body = await streamReader.ReadToEndAsync();
-            request.Body.Position = 0;
-            return body;
-        }
-        catch
-        {
+            if (logger != null) logger.LogWarning("Request Buffering has not been enabled - cannot read Request Body");
+            return null;
         }
 
-        return null;
+        if (request.Body == null) return null;
+
+        request.Body.Position = 0;
+
+        var reader = new StreamReader(request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+        request.Body.Position = 0;
+
+        return body;
     }
 }
