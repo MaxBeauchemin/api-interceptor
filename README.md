@@ -28,6 +28,12 @@ The following code should be added in your `Program.cs` before your `UseEndpoint
 ```csharp
 app.Use(next => context =>
 {
+    if (context.Request.ContentType != null && 
+        context.Request.ContentType.StartsWith("application/json", StringComparison.InvariantCultureIgnoreCase))
+    {
+        context.Request.EnableBuffering();
+    }
+
     context.Request.EnableBuffering();
     return next(context);
 });
@@ -84,19 +90,19 @@ This section describes the different parameters that can be provided in the Opti
 
 For `Body` filtering, we allow you to specify one or more Json Paths that must match a provided value. The path follows the correct pattern:
 
-`$`: Root of Json Body<br>
-`.{Prop}`: Specific Propery of Object<br>
-`[{Idx}]`: Specific Index of an Array<br>
-`[*]`: Any Index of an Array<br>
+- `$`: Root of Json Body
+- `.{Prop}`: Specific Propery of Object
+- `[{Idx}]`: Specific Index of an Array
+- `[*]`: Any Index of an Array
 
 You can combine these to represent complex paths. *i.e.*
 
-`$.X`: X property at root of object<br>
-`$.X.Y`: Y property inside the X object<br>
-`$[0]`: value in the first position of the root array<br>
-`$[*]`: value at any position of the root array<br>
-`$[1].Z`: Z property of object at 2nd position of the root array<br>
-`$[*].Z`: Z property of object at any position of the root array<br>
-`$.X[2]`: value in the third position of the X array<br>
-`$[*][3]`: value in the fourth position of any positions of the root array<br>
-`$[*][*]`: value in any position of any positions of the root array<br>
+- `$.X`: X property at root of object
+- `$.X.Y`: Y property inside the X object
+- `$[0]`: value in the first position of the root array
+- `$[*]`: value at any position of the root array
+- `$[1].Z`: Z property of object at 2nd position of the root array
+- `$[*].Z`: Z property of object at any position of the root array
+- `$.X[2]`: value in the third position of the X array
+- `$[*][3]`: value in the fourth position of any positions of the root array
+- `$[*][*]`: value in any position of any positions of the root array
