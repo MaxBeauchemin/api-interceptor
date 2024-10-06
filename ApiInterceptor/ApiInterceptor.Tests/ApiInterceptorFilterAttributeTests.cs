@@ -238,9 +238,13 @@ public class ApiInterceptorFilterAttributeTests
     }
 
     [Theory]
-    [InlineData("$.X", true)]
-    [InlineData("$.Y", false)]
-    public async Task BodyFilter(string path, bool shouldIntercept)
+    [InlineData("$.X", 2, true)]
+    [InlineData("$.Y", 2, false)]
+    [InlineData("$.X", true, true)]
+    [InlineData("$.X", false, false)]
+    [InlineData("$.X", "null", false)]
+    [InlineData("$.X", null, true)]
+    public async Task BodyFilter(string path, object? xVal, bool shouldIntercept)
     {
         //Arrange
         var options = new Options
@@ -265,7 +269,7 @@ public class ApiInterceptorFilterAttributeTests
                                     new ()
                                     {
                                         Path = path,
-                                        Values = [ "1", "2", "3" ]
+                                        Values = [ "1", "2", "3", "true", null ]
                                     }
                                 }
                             }
@@ -279,7 +283,7 @@ public class ApiInterceptorFilterAttributeTests
             }
         };
 
-        var context = GetMockActionContext("POST", "/api/v1/Sample", body: JsonSerializer.Serialize(new { X = 2 }));
+        var context = GetMockActionContext("POST", "/api/v1/Sample", body: JsonSerializer.Serialize(new { X = xVal }));
 
         var filter = BuildFilter(options);
 

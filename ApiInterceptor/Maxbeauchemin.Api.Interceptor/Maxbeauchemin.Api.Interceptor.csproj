@@ -14,6 +14,7 @@
         <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
     <ItemGroup>
+      <PackageReference Include="JsonPath.Net" Version="1.1.6" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
     </ItemGroup>
     <ItemGroup>

@@ -1,12 +1,15 @@
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using Json.Path;
 using Maxbeauchemin.Api.Interceptor.DTOs;
 using Maxbeauchemin.Api.Interceptor.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace Maxbeauchemin.Api.Interceptor.Filters;
 
@@ -193,14 +196,14 @@ public class ApiInterceptorFilterAttribute : ActionFilterAttribute
         if (endpoint.BodyProperties == null || endpoint.BodyProperties.Count == 0) return true;
 
         if (body == null) return false;
-        
-        var jsonElement = JsonSerializer.SerializeToElement(JsonSerializer.Deserialize<object>(body));
+
+        var instance = JsonNode.Parse(body);
+
+        if (instance == null) return false;
         
         foreach (var p in endpoint.BodyProperties)
         {
-            var matches = JsonMatchUtility.MatchesJson(jsonElement, p.Path, p.Values);
-
-            if (!matches) return false;
+            if (!JsonMatchUtility.MatchesJson(instance, p.Path, p.Values)) return false;
         }
 
         return true;
