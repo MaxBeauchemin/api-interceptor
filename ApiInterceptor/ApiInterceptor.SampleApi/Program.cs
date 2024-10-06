@@ -80,6 +80,12 @@ var app = builder.Build();
 
 app.Use(next => context =>
 {
+    if (context.Request.ContentType != null &&
+        context.Request.ContentType.StartsWith("application/json", StringComparison.InvariantCultureIgnoreCase))
+    {
+        context.Request.EnableBuffering();
+    }
+
     context.Request.EnableBuffering();
     return next(context);
 });
@@ -93,4 +99,4 @@ app.Run();
 //then you can call this to see it getting intercepted
 //  curl http://localhost:5153/api/v1/Sample/Test?input=sample --header "X-Identity: TestIdentity"
 //or this one
-//  curl http://localhost:5153/api/v1/Sample/Test --header "X-Identity: TestIdentity" --data "{ \"X\": { \"Y\": \"Sample\" } }"
+//  curl http://localhost:5153/api/v1/Sample/Test --header "X-Identity: TestIdentity" --header "Content-Type: application/json" --data "{ \"X\": { \"Y\": \"Sample\" } }"
