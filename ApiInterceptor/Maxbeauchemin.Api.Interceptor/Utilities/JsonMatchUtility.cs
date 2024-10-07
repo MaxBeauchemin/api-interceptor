@@ -19,16 +19,10 @@ public static class JsonMatchUtility
 
         foreach (var match in results.Matches)
         {
-            //TODO - verify if this is how this works
             if (match.Value == null) return valuesIncludedNull;
 
             switch (match.Value.GetValueKind())
             {
-                case JsonValueKind.Null:
-                    {
-                        if (valuesIncludedNull) return true;
-                        break;
-                    }
                 case JsonValueKind.String:
                     {
                         if (nonNullValues.Contains(match.Value.GetValue<string>().Trim().ToLower())) return true;
