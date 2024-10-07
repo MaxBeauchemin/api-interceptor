@@ -88,14 +88,9 @@ This section describes the different parameters that can be provided in the Opti
 
 ## Json Path
 
-For `Body` filtering, we allow you to specify one or more Json Paths that must match a provided value. The path follows the correct pattern:
+For `Body` filtering, we allow you to specify one or more Json Paths that must match a provided value. The path follows the correct pattern, as defined in [RFC 9535](https://datatracker.ietf.org/doc/rfc9535/)
 
-- `$`: Root of Json Body
-- `.{Prop}`: Specific Propery of Object
-- `[{Idx}]`: Specific Index of an Array
-- `[*]`: Any Index of an Array
-
-You can combine these to represent complex paths. *i.e.*
+Here are a few examples you can use - note that not all the JSONPath functionality (like range matching) may work at this time
 
 - `$.X`: X property at root of object
 - `$.X.Y`: Y property inside the X object
@@ -106,3 +101,5 @@ You can combine these to represent complex paths. *i.e.*
 - `$.X[2]`: value in the third position of the X array
 - `$[*][3]`: value in the fourth position of any positions of the root array
 - `$[*][*]`: value in any position of any positions of the root array
+
+You can test your path at this handy website - [jsonpath.com](https://jsonpath.com/)
