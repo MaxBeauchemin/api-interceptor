@@ -1,6 +1,6 @@
 # api-interceptor
 
-The `Maxbeauchemin.Api.Interceptor` Nuget package allows you to create **scenarios** where your incoming API calls will be intercepted to help simulate outages or mock different behavior.
+The `Maxbeauchemin.Api.Interceptor` [Nuget package](https://www.nuget.org/packages/Maxbeauchemin.Api.Interceptor) allows you to create **scenarios** where your incoming API calls will be intercepted to help simulate outages or mock different behavior.
 
 This package can be used to help test different error-states applications integrating with your code may be expected to endure.
 
