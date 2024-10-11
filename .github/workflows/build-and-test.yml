@@ -1,0 +1,28 @@
+name: build and test
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        
+      - name: Install dependencies
+        run: dotnet restore
+        working-directory: ApiInterceptor
+        
+      - name: Build
+        run: dotnet build
+        working-directory: ApiInterceptor
+        
+      - name: Test
+        run: dotnet test --verbosity normal
+        working-directory: ApiInterceptor
