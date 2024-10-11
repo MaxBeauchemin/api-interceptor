@@ -30,6 +30,6 @@ jobs:
     - name: Push generated package to GitHub registry
       run: |
         cd ApiInterceptor
-        cd MaxBeauchemin.Api.Interceptor
+        cd Maxbeauchemin.Api.Interceptor
         cd out
         dotnet nuget push *.nupkg --skip-duplicate --no-symbols true
