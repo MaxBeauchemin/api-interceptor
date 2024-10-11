@@ -14,16 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Enter Working Directory
-        run: cd ApiInterceptor
         
       - name: Install dependencies
         run: dotnet restore
+        working-directory: ApiInterceptor
         
       - name: Build
         run: dotnet build
+        working-directory: ApiInterceptor
         
       - name: Test
-        run: dotnet test
-        
+        run: dotnet test --verbosity normal
+        working-directory: ApiInterceptor
