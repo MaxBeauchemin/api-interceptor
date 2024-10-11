@@ -12,6 +12,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         
@@ -24,5 +25,5 @@ jobs:
         working-directory: ApiInterceptor
         
       - name: Test
-        run: dotnet test --verbosity normal
+        run: dotnet test --verbosity normal --no-build
         working-directory: ApiInterceptor
