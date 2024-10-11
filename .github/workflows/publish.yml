@@ -1,0 +1,30 @@
+name: release to Nuget
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET Core @ Latest
+      uses: actions/setup-dotnet@v1
+      with:
+        source-url: https://nuget.pkg.github.com/maxbeauchemin/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_API_KEY }}        
+        
+    - name: Build solution and generate NuGet package
+      run: |  
+        cd ApiInterceptor.MaxBeauchemin
+        dotnet pack -c Release -o out  
+
+    - name: Push generated package to GitHub registry
+      run: dotnet nuget push ./ApiInterceptor.MaxBeauchemin/out/*.nupkg --skip-duplicate --no-symbols true
