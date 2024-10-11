@@ -13,18 +13,16 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-
-    - name: Setup .NET Core @ Latest
-      uses: actions/setup-dotnet@v1
-      with:
-        source-url: https://nuget.pkg.github.com/maxbeauchemin/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_API_KEY }}        
         
     - name: Build solution and generate NuGet package
       run: |  
-        cd ApiInterceptor.MaxBeauchemin
-        dotnet pack -c Release -o out  
+        cd ApiInterceptor
+        cd Maxbeauchemin.Api.Interceptor
+        dotnet pack -c Release -o out
 
     - name: Push generated package to GitHub registry
-      run: dotnet nuget push ./ApiInterceptor.MaxBeauchemin/out/*.nupkg --skip-duplicate --no-symbols true
+      run: |
+        cd ApiInterceptor
+        cd Maxbeauchemin.Api.Interceptor
+        cd out
+        dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
