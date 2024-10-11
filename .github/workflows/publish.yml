@@ -23,8 +23,13 @@ jobs:
         
     - name: Build solution and generate NuGet package
       run: |  
-        cd ApiInterceptor/MaxBeauchemin.Api.Interceptor
+        cd ApiInterceptor
+        cd MaxBeauchemin.Api.Interceptor
         dotnet pack -c Release -o out  
 
     - name: Push generated package to GitHub registry
-      run: dotnet nuget push ./ApiInterceptor/MaxBeauchemin.Api.Interceptor/out/*.nupkg --skip-duplicate --no-symbols true
+      run: |
+        cd ApiInterceptor
+        cd MaxBeauchemin.Api.Interceptor
+        cd out
+        dotnet nuget push *.nupkg --skip-duplicate --no-symbols true
